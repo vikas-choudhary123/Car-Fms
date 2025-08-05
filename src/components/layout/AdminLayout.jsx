@@ -316,7 +316,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
         <div className="flex h-14 items-center border-b border-blue-200 px-4 bg-gradient-to-r from-blue-100 to-purple-100">
           <Link to="/dashboard/admin" className="flex items-center gap-2 font-semibold text-blue-700">
             <ClipboardList className="h-5 w-5 text-blue-600" />
-            <span>Checklist & Delegation</span>
+            <span>Vehicle Maintenance</span>
           </Link>
         </div>
         <nav className="flex-1 overflow-y-auto p-2">

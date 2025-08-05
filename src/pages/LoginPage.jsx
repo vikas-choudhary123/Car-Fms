@@ -222,7 +222,7 @@ const LoginPage = () => {
         <div className="space-y-1 p-4 bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-lg">
           <div className="flex items-center justify-center mb-2">
             <i className="fas fa-clipboard-list h-8 w-8 text-blue-600 mr-2"></i>
-            <h2 className="text-2xl font-bold text-blue-700">Checklist & Delegation</h2>
+            <h2 className="text-2xl font-bold text-blue-700">Vehicle Maintenance</h2>
           </div>
           <p className="text-center text-blue-600">Login to access your tasks and delegations</p>
         </div>
