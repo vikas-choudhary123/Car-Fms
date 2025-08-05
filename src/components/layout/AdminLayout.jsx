@@ -61,13 +61,13 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       active: location.pathname === "/dashboard/admin",
       showFor: ["admin", "user"] // Show for both roles
     },
-    {
-      href: "/dashboard/quick-task",
-      label: "Quick Task",
-      icon: Zap,
-      active: location.pathname === "/dashboard/quick-task",
-      showFor: ["admin", "user"] // Only show for admin
-    },
+    // {
+    //   href: "/dashboard/quick-task",
+    //   label: "Quick Task",
+    //   icon: Zap,
+    //   active: location.pathname === "/dashboard/quick-task",
+    //   showFor: ["admin", "user"] // Only show for admin
+    // },
     {
       href: "/dashboard/assign-task",
       label: "Assign Task",
@@ -78,35 +78,35 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
 
     {
       href: "/dashboard/delegation",
-      label: "Delegation",
+      label: "Checklist",
       icon: ClipboardList,
       active: location.pathname === "/dashboard/delegation",
       showFor: ["admin", "user"] // Only show for admin
     },
-    {
-      href: "#",
-      label: "Data",
-      icon: Database,
-      active: location.pathname.includes("/dashboard/data"),
-      submenu: true,
-      showFor: ["admin", "user"] // Show for both roles
-    },
+    // {
+    //   href: "#",
+    //   label: "Data",
+    //   icon: Database,
+    //   active: location.pathname.includes("/dashboard/data"),
+    //   submenu: true,
+    //   showFor: ["admin", "user"] // Show for both roles
+    // },
 
-    {
-      href: "/dashboard/license",
-      label: "License",
-      icon: KeyRound,
-      active: location.pathname === "/dashboard/license",
-      showFor: ["admin", "user"] // show both
-    },
+    // {
+    //   href: "/dashboard/license",
+    //   label: "License",
+    //   icon: KeyRound,
+    //   active: location.pathname === "/dashboard/license",
+    //   showFor: ["admin", "user"] // show both
+    // },
 
-    {
-      href: "/dashboard/traning-video",
-      label: "Training Video",
-      icon: Video,
-      active: location.pathname === "/dashboard/traning-video",
-      showFor: ["admin", "user"] //  show both
-    },
+    // {
+    //   href: "/dashboard/traning-video",
+    //   label: "Training Video",
+    //   icon: Video,
+    //   active: location.pathname === "/dashboard/traning-video",
+    //   showFor: ["admin", "user"] //  show both
+    // },
   ]
 
   const getAccessibleDepartments = () => {
