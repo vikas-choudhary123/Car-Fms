@@ -22,7 +22,6 @@ const CONFIG = {
   },
 }
 
-// Enhanced Vehicle Checklist Form Component
 // Enhanced Vehicle Checklist Form Component with Fixed Scrolling
 const VehicleChecklistForm = ({ task, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -77,6 +76,60 @@ const VehicleChecklistForm = ({ task, onClose, onSubmit }) => {
     generalRemarks: "",
   })
 
+  // State for dropdown options
+  const [checkedByOptions, setCheckedByOptions] = useState([])
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true)
+
+  // Fetch dropdown options from Whatsapp sheet
+  useEffect(() => {
+    const fetchCheckedByOptions = async () => {
+      try {
+        setIsLoadingOptions(true)
+        const sheetName = "Whatsapp"
+        
+        const response = await fetch(
+          `https://docs.google.com/spreadsheets/d/15gXZwRrSOVA0vVbb__EdDoq554kYO50yiWnyteGrHJ0/gviz/tq?tqx=out:json&sheet=${sheetName}`,
+        )
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${sheetName} sheet data: ${response.status}`)
+        }
+
+        const text = await response.text()
+        const jsonStart = text.indexOf("{")
+        const jsonEnd = text.lastIndexOf("}")
+        const jsonString = text.substring(jsonStart, jsonEnd + 1)
+        const data = JSON.parse(jsonString)
+
+        const options = []
+        
+        // Process rows to get column B data
+        data.table.rows.forEach((row, rowIndex) => {
+          if (rowIndex === 0) return // Skip header row
+          
+          // Get column B value (index 1)
+          const cellValue = row.c && row.c[1] && row.c[1].v
+          
+          if (cellValue && cellValue.trim() !== "") {
+            options.push(cellValue.trim())
+          }
+        })
+
+        // Remove duplicates and sort
+        const uniqueOptions = [...new Set(options)].sort()
+        setCheckedByOptions(uniqueOptions)
+      } catch (error) {
+        console.error("Error fetching checked by options:", error)
+        // Fallback to empty array if fetch fails
+        setCheckedByOptions([])
+      } finally {
+        setIsLoadingOptions(false)
+      }
+    }
+
+    fetchCheckedByOptions()
+  }, [])
+
   const checklistItems = [
     { key: "engineOilLevel", label: "Engine Oil Level" },
     { key: "hydraulicOil", label: "Hydraulic Oil" },
@@ -130,7 +183,7 @@ const VehicleChecklistForm = ({ task, onClose, onSubmit }) => {
 
     // Validate required fields
     if (!formData.checkedBy.trim()) {
-      alert("Please enter who checked the vehicle")
+      alert("Please select who checked the vehicle")
       return
     }
 
@@ -198,14 +251,22 @@ const VehicleChecklistForm = ({ task, onClose, onSubmit }) => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Checked By*</label>
-                <input
-                  type="text"
+                <select
                   value={formData.checkedBy}
                   onChange={(e) => setFormData((prev) => ({ ...prev, checkedBy: e.target.value }))}
-                  placeholder="Enter your name"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   required
-                />
+                  disabled={isLoadingOptions}
+                >
+                  <option value="">
+                    {isLoadingOptions ? "Loading..." : "Select checker"}
+                  </option>
+                  {checkedByOptions.map((option, index) => (
+                    <option key={index} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -327,35 +388,6 @@ export default function SalesDataPage() {
     return new Date(parts[2], parts[1] - 1, parts[0])
   }
 
-  // const isDateToday = (dateStr) => {
-  //   if (!dateStr) return false;
-    
-  //   // Try to parse as DD/MM/YYYY
-  //   const parts = dateStr.split('/');
-  //   if (parts.length === 3) {
-  //     const day = parseInt(parts[0], 10);
-  //     const month = parseInt(parts[1], 10) - 1;
-  //     const year = parseInt(parts[2], 10);
-  //     const taskDate = new Date(year, month, day);
-      
-  //     const today = new Date();
-  //     today.setHours(0, 0, 0, 0);
-      
-  //     return taskDate.getTime() === today.getTime();
-  //   }
-    
-  //   // Try to parse as full datetime string
-  //   const date = new Date(dateStr);
-  //   if (!isNaN(date.getTime())) {
-  //     const today = new Date();
-  //     today.setHours(0, 0, 0, 0);
-  //     date.setHours(0, 0, 0, 0);
-  //     return date.getTime() === today.getTime();
-  //   }
-    
-  //   return false;
-  // };
-
   const formatDateToDDMMYYYY = (date) => {
     const day = date.getDate().toString().padStart(2, "0")
     const month = (date.getMonth() + 1).toString().padStart(2, "0")
@@ -383,91 +415,10 @@ export default function SalesDataPage() {
     return cell && "v" in cell ? cell.v : null
   }
 
-// Fixed parseGoogleSheetsDate function
-const parseGoogleSheetsDate = (dateStr) => {
-  if (!dateStr) return ""
+  // Fixed parseGoogleSheetsDate function
+  const parseGoogleSheetsDate = (dateStr) => {
+    if (!dateStr) return ""
 
-  // Handle Google Sheets Date format: Date(2025,7,8,9,0,0)
-  if (typeof dateStr === "string" && dateStr.startsWith("Date(")) {
-    const match = /Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/.exec(dateStr)
-    if (match) {
-      const year = parseInt(match[1], 10)
-      const month = parseInt(match[2], 10) // Google Sheets uses 0-based months
-      const day = parseInt(match[3], 10)
-      const hour = match[4] ? parseInt(match[4], 10) : 0
-      const minute = match[5] ? parseInt(match[5], 10) : 0
-      const second = match[6] ? parseInt(match[6], 10) : 0
-      
-      // Create date object (month is already 0-based from Google Sheets)
-      const date = new Date(year, month, day, hour, minute, second)
-      
-      // Format as DD/MM/YYYY HH:MM:SS if time components exist, otherwise DD/MM/YYYY
-      const dayStr = day.toString().padStart(2, "0")
-      const monthStr = (month + 1).toString().padStart(2, "0") // Convert to 1-based for display
-      const yearStr = year.toString()
-      
-      if (hour || minute || second) {
-        const hourStr = hour.toString().padStart(2, "0")
-        const minuteStr = minute.toString().padStart(2, "0")
-        const secondStr = second.toString().padStart(2, "0")
-        return `${dayStr}/${monthStr}/${yearStr} ${hourStr}:${minuteStr}:${secondStr}`
-      } else {
-        return `${dayStr}/${monthStr}/${yearStr}`
-      }
-    }
-  }
-
-  // Handle DD/MM/YYYY format
-  if (typeof dateStr === "string" && dateStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
-    const parts = dateStr.split("/")
-    const day = parts[0].padStart(2, "0")
-    const month = parts[1].padStart(2, "0")
-    const year = parts[2]
-    return `${day}/${month}/${year}`
-  }
-
-  // Handle Date objects
-  if (dateStr instanceof Date && !isNaN(dateStr.getTime())) {
-    const day = dateStr.getDate().toString().padStart(2, "0")
-    const month = (dateStr.getMonth() + 1).toString().padStart(2, "0")
-    const year = dateStr.getFullYear()
-    const hour = dateStr.getHours()
-    const minute = dateStr.getMinutes()
-    const second = dateStr.getSeconds()
-    
-    if (hour || minute || second) {
-      const hourStr = hour.toString().padStart(2, "0")
-      const minuteStr = minute.toString().padStart(2, "0")
-      const secondStr = second.toString().padStart(2, "0")
-      return `${day}/${month}/${year} ${hourStr}:${minuteStr}:${secondStr}`
-    } else {
-      return `${day}/${month}/${year}`
-    }
-  }
-
-  // Try to parse as generic date string
-  try {
-    const date = new Date(dateStr)
-    if (!isNaN(date.getTime())) {
-      const day = date.getDate().toString().padStart(2, "0")
-      const month = (date.getMonth() + 1).toString().padStart(2, "0")
-      const year = date.getFullYear()
-      return `${day}/${month}/${year}`
-    }
-  } catch (e) {
-    console.error("Error parsing date:", e)
-  }
-
-  return dateStr
-}
-
-// Fixed isDateToday function
-const isDateToday = (dateStr) => {
-  if (!dateStr) return false;
-  
-  try {
-    let taskDate;
-    
     // Handle Google Sheets Date format: Date(2025,7,8,9,0,0)
     if (typeof dateStr === "string" && dateStr.startsWith("Date(")) {
       const match = /Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/.exec(dateStr)
@@ -475,44 +426,126 @@ const isDateToday = (dateStr) => {
         const year = parseInt(match[1], 10)
         const month = parseInt(match[2], 10) // Google Sheets uses 0-based months
         const day = parseInt(match[3], 10)
-        taskDate = new Date(year, month, day) // month is already 0-based
+        const hour = match[4] ? parseInt(match[4], 10) : 0
+        const minute = match[5] ? parseInt(match[5], 10) : 0
+        const second = match[6] ? parseInt(match[6], 10) : 0
+        
+        // Create date object (month is already 0-based from Google Sheets)
+        const date = new Date(year, month, day, hour, minute, second)
+        
+        // Format as DD/MM/YYYY HH:MM:SS if time components exist, otherwise DD/MM/YYYY
+        const dayStr = day.toString().padStart(2, "0")
+        const monthStr = (month + 1).toString().padStart(2, "0") // Convert to 1-based for display
+        const yearStr = year.toString()
+        
+        if (hour || minute || second) {
+          const hourStr = hour.toString().padStart(2, "0")
+          const minuteStr = minute.toString().padStart(2, "0")
+          const secondStr = second.toString().padStart(2, "0")
+          return `${dayStr}/${monthStr}/${yearStr} ${hourStr}:${minuteStr}:${secondStr}`
+        } else {
+          return `${dayStr}/${monthStr}/${yearStr}`
+        }
       }
     }
+
     // Handle DD/MM/YYYY format
-    else if (typeof dateStr === "string" && dateStr.includes('/')) {
-      const parts = dateStr.split(' ')[0].split('/'); // Take only date part, ignore time
-      if (parts.length === 3) {
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // Convert to 0-based
-        const year = parseInt(parts[2], 10);
-        taskDate = new Date(year, month, day);
+    if (typeof dateStr === "string" && dateStr.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+      const parts = dateStr.split("/")
+      const day = parts[0].padStart(2, "0")
+      const month = parts[1].padStart(2, "0")
+      const year = parts[2]
+      return `${day}/${month}/${year}`
+    }
+
+    // Handle Date objects
+    if (dateStr instanceof Date && !isNaN(dateStr.getTime())) {
+      const day = dateStr.getDate().toString().padStart(2, "0")
+      const month = (dateStr.getMonth() + 1).toString().padStart(2, "0")
+      const year = dateStr.getFullYear()
+      const hour = dateStr.getHours()
+      const minute = dateStr.getMinutes()
+      const second = dateStr.getSeconds()
+      
+      if (hour || minute || second) {
+        const hourStr = hour.toString().padStart(2, "0")
+        const minuteStr = minute.toString().padStart(2, "0")
+        const secondStr = second.toString().padStart(2, "0")
+        return `${day}/${month}/${year} ${hourStr}:${minuteStr}:${secondStr}`
+      } else {
+        return `${day}/${month}/${year}`
       }
     }
-    // Handle Date objects
-    else if (dateStr instanceof Date) {
-      taskDate = new Date(dateStr);
+
+    // Try to parse as generic date string
+    try {
+      const date = new Date(dateStr)
+      if (!isNaN(date.getTime())) {
+        const day = date.getDate().toString().padStart(2, "0")
+        const month = (date.getMonth() + 1).toString().padStart(2, "0")
+        const year = date.getFullYear()
+        return `${day}/${month}/${year}`
+      }
+    } catch (e) {
+      console.error("Error parsing date:", e)
     }
-    // Try generic date parsing
-    else {
-      taskDate = new Date(dateStr);
-    }
+
+    return dateStr
+  }
+
+  // Fixed isDateToday function
+  const isDateToday = (dateStr) => {
+    if (!dateStr) return false;
     
-    if (!taskDate || isNaN(taskDate.getTime())) {
+    try {
+      let taskDate;
+      
+      // Handle Google Sheets Date format: Date(2025,7,8,9,0,0)
+      if (typeof dateStr === "string" && dateStr.startsWith("Date(")) {
+        const match = /Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/.exec(dateStr)
+        if (match) {
+          const year = parseInt(match[1], 10)
+          const month = parseInt(match[2], 10) // Google Sheets uses 0-based months
+          const day = parseInt(match[3], 10)
+          taskDate = new Date(year, month, day) // month is already 0-based
+        }
+      }
+      // Handle DD/MM/YYYY format
+      else if (typeof dateStr === "string" && dateStr.includes('/')) {
+        const parts = dateStr.split(' ')[0].split('/'); // Take only date part, ignore time
+        if (parts.length === 3) {
+          const day = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1; // Convert to 0-based
+          const year = parseInt(parts[2], 10);
+          taskDate = new Date(year, month, day);
+        }
+      }
+      // Handle Date objects
+      else if (dateStr instanceof Date) {
+        taskDate = new Date(dateStr);
+      }
+      // Try generic date parsing
+      else {
+        taskDate = new Date(dateStr);
+      }
+      
+      if (!taskDate || isNaN(taskDate.getTime())) {
+        return false;
+      }
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      taskDate.setHours(0, 0, 0, 0);
+      
+      return taskDate.getTime() === today.getTime();
+    } catch (error) {
+      console.error("Error parsing date:", dateStr, error);
       return false;
     }
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    taskDate.setHours(0, 0, 0, 0);
-    
-    return taskDate.getTime() === today.getTime();
-  } catch (error) {
-    console.error("Error parsing date:", dateStr, error);
-    return false;
-  }
-};
+  };
 
-// Fixed isDateInRange function for checking yesterday, today, tomorrow
+  // Fixed isDateInRange function for checking yesterday, today, tomorrow
+// Fixed isDateInRange function for checking today and overdue tasks only
 const isDateInRange = (dateStr) => {
   if (!dateStr) return false;
   
@@ -553,23 +586,16 @@ const isDateInRange = (dateStr) => {
     }
     
     const today = new Date();
-    const yesterday = new Date(today);
-    const tomorrow = new Date(today);
-    
-    yesterday.setDate(today.getDate() - 1);
-    tomorrow.setDate(today.getDate() + 1);
     
     // Set all times to midnight for comparison
-    [today, yesterday, tomorrow, taskDate].forEach(date => {
-      date.setHours(0, 0, 0, 0);
-    });
+    today.setHours(0, 0, 0, 0);
+    taskDate.setHours(0, 0, 0, 0);
     
     const taskTime = taskDate.getTime();
     const todayTime = today.getTime();
-    const yesterdayTime = yesterday.getTime();
-    const tomorrowTime = tomorrow.getTime();
     
-    return taskTime === yesterdayTime || taskTime === todayTime || taskTime === tomorrowTime;
+    // Return true only if task date is today or before today (overdue)
+    return taskTime <= todayTime;
   } catch (error) {
     console.error("Error parsing date for range check:", dateStr, error);
     return false;
@@ -577,246 +603,172 @@ const isDateInRange = (dateStr) => {
 };
 
   // Fetch sheet data
-// Replace the fetchSheetData function in your component with this fixed version:
+  const fetchSheetData = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const pendingTasks = []
+      const historyRows = []
+      const sheetName = CONFIG.SHEET_NAME
 
-// Replace the fetchSheetData function in your component with this fixed version:
+      const response = await fetch(
+        `https://docs.google.com/spreadsheets/d/15gXZwRrSOVA0vVbb__EdDoq554kYO50yiWnyteGrHJ0/gviz/tq?tqx=out:json&sheet=${sheetName}`,
+      )
 
-const fetchSheetData = useCallback(async () => {
-  try {
-    setIsLoading(true)
-    const pendingTasks = []
-    const historyRows = []
-    const sheetName = CONFIG.SHEET_NAME
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${sheetName} sheet data: ${response.status}`)
+      }
 
-    const response = await fetch(
-      `https://docs.google.com/spreadsheets/d/15gXZwRrSOVA0vVbb__EdDoq554kYO50yiWnyteGrHJ0/gviz/tq?tqx=out:json&sheet=${sheetName}`,
-    )
+      const text = await response.text()
+      const jsonStart = text.indexOf("{")
+      const jsonEnd = text.lastIndexOf("}")
+      const jsonString = text.substring(jsonStart, jsonEnd + 1)
+      const data = JSON.parse(jsonString)
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${sheetName} sheet data: ${response.status}`)
-    }
+      const today = new Date()
+      const tomorrow = new Date(today)
+      tomorrow.setDate(today.getDate() + 1)
+      const yesterday = new Date(today)
+      yesterday.setDate(today.getDate() - 1)
+      
+      const todayStr = formatDateToDDMMYYYY(today)
+      const tomorrowStr = formatDateToDDMMYYYY(tomorrow)
+      const yesterdayStr = formatDateToDDMMYYYY(yesterday)
 
-    const text = await response.text()
-    const jsonStart = text.indexOf("{")
-    const jsonEnd = text.lastIndexOf("}")
-    const jsonString = text.substring(jsonStart, jsonEnd + 1)
-    const data = JSON.parse(jsonString)
+      const membersSet = new Set()
 
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(today.getDate() + 1)
-    const yesterday = new Date(today)
-    yesterday.setDate(today.getDate() - 1)
-    
-    const todayStr = formatDateToDDMMYYYY(today)
-    const tomorrowStr = formatDateToDDMMYYYY(tomorrow)
-    const yesterdayStr = formatDateToDDMMYYYY(yesterday)
+      console.log("Processing sheet data:", data.table.rows.length, "rows")
+      console.log("Sheet columns:", data.table.cols ? data.table.cols.map(col => col.label) : "No columns")
+      console.log("First few rows structure:", data.table.rows.slice(0, 3).map((row, i) => ({
+        rowIndex: i,
+        cellCount: row.c ? row.c.length : 0,
+        cells: row.c ? row.c.map((cell, idx) => `[${idx}]: ${cell ? cell.v : 'null'}`) : 'No cells'
+      })))
 
-    const membersSet = new Set()
+      data.table.rows.forEach((row, rowIndex) => {
+        if (rowIndex === 0) return // Skip header row
 
-    console.log("Processing sheet data:", data.table.rows.length, "rows")
-    console.log("Sheet columns:", data.table.cols ? data.table.cols.map(col => col.label) : "No columns")
-    console.log("First few rows structure:", data.table.rows.slice(0, 3).map((row, i) => ({
-      rowIndex: i,
-      cellCount: row.c ? row.c.length : 0,
-      cells: row.c ? row.c.map((cell, idx) => `[${idx}]: ${cell ? cell.v : 'null'}`) : 'No cells'
-    })))
+        // Get basic task info
+        const taskId = getCellValue(row, 1) // Column B - Task ID
+        const departmentName = getCellValue(row, 2) // Column C - Department Name  
+        const givenBy = getCellValue(row, 2) // Column D - Given By
+        const assignedTo = getCellValue(row, 2) // Column E - Name (Assigned To)
+        const taskDescription = getCellValue(row, 3) // Column F - Task Description
+        const taskStartDateValue = getCellValue(row, 4) // Column G - Task Start Date
+        const frequency = getCellValue(row, 5) // Column H - Frequency
+        const actualDateValue = getCellValue(row, 6) // Column K - Actual Date (Completion)
+        const status = getCellValue(row, 8) // Column M - Status
+        const remarks = getCellValue(row, 9) // Column N - Remarks
+        const remarks1 = getCellValue(row, 10) // Column N - Remarks
+        const remarks2 = getCellValue(row, 11) // Column N - Remarks
+        const remarks3 = getCellValue(row, 13) // Column N - Remarks
+        const remarks4 = getCellValue(row, 14) // Column N - Remarks
 
-    data.table.rows.forEach((row, rowIndex) => {
-      if (rowIndex === 0) return // Skip header row
+        console.log(`Row ${rowIndex + 1}:`, {
+          taskId,
+          assignedTo,
+          taskStartDateValue,
+          actualDateValue,
+          status,
+          rawRow: row.c ? row.c.map(cell => cell ? cell.v : null) : 'No cells'
+        })
 
-      // Get basic task info
-      const taskId = getCellValue(row, 1) // Column B - Task ID
-      const departmentName = getCellValue(row, 2) // Column C - Department Name  
-      const givenBy = getCellValue(row, 2) // Column D - Given By
-      const assignedTo = getCellValue(row, 2) // Column E - Name (Assigned To)
-      const taskDescription = getCellValue(row, 3) // Column F - Task Description
-      const taskStartDateValue = getCellValue(row, 4) // Column G - Task Start Date
-      const frequency = getCellValue(row, 5) // Column H - Frequency
-      const actualDateValue = getCellValue(row, 6) // Column K - Actual Date (Completion)
-      const status = getCellValue(row, 8) // Column M - Status
-      const remarks = getCellValue(row, 9) // Column N - Remarks
-      const remarks1 = getCellValue(row, 10) // Column N - Remarks
-      const remarks2 = getCellValue(row, 11) // Column N - Remarks
-      const remarks3 = getCellValue(row, 13) // Column N - Remarks
-      const remarks4 = getCellValue(row, 14) // Column N - Remarks
+        // Skip rows without task ID
+        if (!taskId || taskId === "" || (typeof taskId === "string" && taskId.trim() === "")) {
+          console.log(`Skipping row ${rowIndex + 1} - no task ID`)
+          return
+        }
 
-      console.log(`Row ${rowIndex + 1}:`, {
-        taskId,
-        assignedTo,
-        taskStartDateValue,
-        actualDateValue,
-        status,
-        rawRow: row.c ? row.c.map(cell => cell ? cell.v : null) : 'No cells'
+        // Add to members list
+        if (assignedTo) {
+          membersSet.add(assignedTo)
+        }
+
+        // Filter by user (non-admin users only see their tasks)
+        const isUserMatch = userRole === "admin" || 
+                           (assignedTo && assignedTo.toLowerCase() === username.toLowerCase())
+
+        if (!isUserMatch && userRole !== "admin") {
+          console.log(`Skipping row ${rowIndex + 1} - user mismatch`)
+          return
+        }
+
+        // Parse dates
+        const taskStartDate = taskStartDateValue ? parseGoogleSheetsDate(String(taskStartDateValue)) : ""
+        const actualDate = actualDateValue ? parseGoogleSheetsDate(String(actualDateValue)) : ""
+
+        const stableId = `task_${taskId}_${rowIndex + 1}`
+
+        const taskData = {
+          _id: stableId,
+          _rowIndex: rowIndex + 1,
+          _taskId: taskId,
+          id: String(taskId).trim(),
+          title: taskDescription || "Untitled Task",
+          assignedTo: assignedTo || "Unassigned",
+          taskStartDate,
+          frequency: frequency || "one-time",
+          completionDate: actualDate,
+          status: status || "",
+          // Store all columns for reference
+          col1: taskId,
+          col2: departmentName || "",
+          col3: givenBy || "",
+          col4: assignedTo || "",
+          col5: taskDescription || "",
+          col6: taskStartDate,
+          col7: frequency || "",
+          col8: getCellValue(row, 8) || "",
+          col9: getCellValue(row, 9) || "",
+          col10: actualDate,
+          col11: getCellValue(row, 10) || "",
+          col12: status || "",
+          col13: getCellValue(row, 11) || "",
+          col14: getCellValue(row, 13) || "",
+          col15: getCellValue(row, 14) || "",
+        }
+
+        // Determine if task should be in pending or history
+        // PENDING CRITERIA: Tasks that need to be done today and are not completed
+        // - Must have a task start date
+        // - Task start date should be today, yesterday, or tomorrow (flexible range)
+        // - Should NOT have completion date OR status should not be "Yes"
+        
+        const hasCompletionDate = actualDate && actualDate.trim() !== ""
+        const isCompleted = status && (status.toLowerCase() === "yes" || status.toLowerCase() === "completed")
+        
+        if (taskStartDate) {
+  const isTaskForTodayOrOverdue = isDateInRange(taskStartDate);
+
+  if (isTaskForTodayOrOverdue && !hasCompletionDate && !isCompleted) {
+    console.log(`Adding to pending:`, taskData.id, taskStartDate)
+    pendingTasks.push(taskData)
+  } else if (hasCompletionDate || isCompleted) {
+    console.log(`Adding to history:`, taskData.id, actualDate || status)
+    historyRows.push(taskData)
+  }
+} else {
+          console.log(`Row ${rowIndex + 1} - no task start date`)
+        }
       })
 
-      // Skip rows without task ID
-      if (!taskId || taskId === "" || (typeof taskId === "string" && taskId.trim() === "")) {
-        console.log(`Skipping row ${rowIndex + 1} - no task ID`)
-        return
-      }
+      console.log("Final counts:", {
+        pendingTasks: pendingTasks.length,
+        historyRows: historyRows.length,
+        totalMembers: membersSet.size
+      })
 
-      // Add to members list
-      if (assignedTo) {
-        membersSet.add(assignedTo)
-      }
-
-      // Filter by user (non-admin users only see their tasks)
-      const isUserMatch = userRole === "admin" || 
-                         (assignedTo && assignedTo.toLowerCase() === username.toLowerCase())
-
-      if (!isUserMatch && userRole !== "admin") {
-        console.log(`Skipping row ${rowIndex + 1} - user mismatch`)
-        return
-      }
-
-      // Parse dates
-      const taskStartDate = taskStartDateValue ? parseGoogleSheetsDate(String(taskStartDateValue)) : ""
-      const actualDate = actualDateValue ? parseGoogleSheetsDate(String(actualDateValue)) : ""
-
-      const stableId = `task_${taskId}_${rowIndex + 1}`
-
-      const taskData = {
-        _id: stableId,
-        _rowIndex: rowIndex + 1,
-        _taskId: taskId,
-        id: String(taskId).trim(),
-        title: taskDescription || "Untitled Task",
-        assignedTo: assignedTo || "Unassigned",
-        taskStartDate,
-        frequency: frequency || "one-time",
-        completionDate: actualDate,
-        status: status || "",
-        // Store all columns for reference
-        col1: taskId,
-        col2: departmentName || "",
-        col3: givenBy || "",
-        col4: assignedTo || "",
-        col5: taskDescription || "",
-        col6: taskStartDate,
-        col7: frequency || "",
-        col8: getCellValue(row, 8) || "",
-        col9: getCellValue(row, 9) || "",
-        col10: actualDate,
-        col11: getCellValue(row, 10) || "",
-        col12: status || "",
-        col13: getCellValue(row, 11) || "",
-        col14: getCellValue(row, 13) || "",
-        col15: getCellValue(row, 14) || "",
-      }
-
-      // Determine if task should be in pending or history
-      // PENDING CRITERIA: Tasks that need to be done today and are not completed
-      // - Must have a task start date
-      // - Task start date should be today, yesterday, or tomorrow (flexible range)
-      // - Should NOT have completion date OR status should not be "Yes"
-      
-      const hasCompletionDate = actualDate && actualDate.trim() !== ""
-      const isCompleted = status && (status.toLowerCase() === "yes" || status.toLowerCase() === "completed")
-      
-      if (taskStartDate) {
-        const isTaskForToday = isDateToday(taskStartDate) || 
-                              taskStartDate === yesterdayStr || 
-                              taskStartDate === tomorrowStr
-
-        if (isTaskForToday && !hasCompletionDate && !isCompleted) {
-          console.log(`Adding to pending:`, taskData.id, taskStartDate)
-          pendingTasks.push(taskData)
-        } else if (hasCompletionDate || isCompleted) {
-          console.log(`Adding to history:`, taskData.id, actualDate || status)
-          historyRows.push(taskData)
-        }
-      } else {
-        console.log(`Row ${rowIndex + 1} - no task start date`)
-      }
-    })
-
-    console.log("Final counts:", {
-      pendingTasks: pendingTasks.length,
-      historyRows: historyRows.length,
-      totalMembers: membersSet.size
-    })
-
-    setMembersList(Array.from(membersSet).sort())
-    setTasks(pendingTasks)
-    setFilteredTasks(pendingTasks)
-    setHistoryData(historyRows)
-  } catch (error) {
-    console.error("Error fetching pending tasks:", error)
-    // Show user-friendly error message
-    alert("Failed to load tasks. Please refresh the page and try again.")
-  } finally {
-    setIsLoading(false)
-  }
-}, [username, userRole])
-
-// Also update the isDateToday function to be more flexible:
-// const isDateToday = (dateStr) => {
-//   if (!dateStr) return false;
-  
-//   try {
-//     // Try to parse as DD/MM/YYYY
-//     const parts = dateStr.split('/');
-//     if (parts.length === 3) {
-//       const day = parseInt(parts[0], 10);
-//       const month = parseInt(parts[1], 10) - 1;
-//       const year = parseInt(parts[2], 10);
-//       const taskDate = new Date(year, month, day);
-      
-//       const today = new Date();
-//       today.setHours(0, 0, 0, 0);
-//       taskDate.setHours(0, 0, 0, 0);
-      
-//       return taskDate.getTime() === today.getTime();
-//     }
-    
-//     // Try to parse as full datetime string
-//     const date = new Date(dateStr);
-//     if (!isNaN(date.getTime())) {
-//       const today = new Date();
-//       today.setHours(0, 0, 0, 0);
-//       date.setHours(0, 0, 0, 0);
-//       return date.getTime() === today.getTime();
-//     }
-//   } catch (error) {
-//     console.error("Error parsing date:", dateStr, error);
-//   }
-  
-//   return false;
-// };
-// const isDateToday = (dateStr) => {
-//   if (!dateStr) return false;
-  
-//   try {
-//     // Try to parse as DD/MM/YYYY
-//     const parts = dateStr.split('/');
-//     if (parts.length === 3) {
-//       const day = parseInt(parts[0], 10);
-//       const month = parseInt(parts[1], 10) - 1;
-//       const year = parseInt(parts[2], 10);
-//       const taskDate = new Date(year, month, day);
-      
-//       const today = new Date();
-//       today.setHours(0, 0, 0, 0);
-//       taskDate.setHours(0, 0, 0, 0);
-      
-//       return taskDate.getTime() === today.getTime();
-//     }
-    
-//     // Try to parse as full datetime string
-//     const date = new Date(dateStr);
-//     if (!isNaN(date.getTime())) {
-//       const today = new Date();
-//       today.setHours(0, 0, 0, 0);
-//       date.setHours(0, 0, 0, 0);
-//       return date.getTime() === today.getTime();
-//     }
-//   } catch (error) {
-//     console.error("Error parsing date:", dateStr, error);
-//   }
-  
-//   return false;
-// };
+      setMembersList(Array.from(membersSet).sort())
+      setTasks(pendingTasks)
+      setFilteredTasks(pendingTasks)
+      setHistoryData(historyRows)
+    } catch (error) {
+      console.error("Error fetching pending tasks:", error)
+      // Show user-friendly error message
+      alert("Failed to load tasks. Please refresh the page and try again.")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [username, userRole])
 
   // Filter tasks based on search and filters
   useEffect(() => {
@@ -1228,94 +1180,93 @@ const fetchSheetData = useCallback(async () => {
             </div>
 
             {/* History Table */}
-           {/* History Table */}
-<div className="h-[calc(100vh-300px)] overflow-auto">
-  <table className="min-w-full divide-y divide-gray-200">
-    <thead className="bg-gray-50 sticky top-0 z-10">
-      <tr>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-          Task ID
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
-          Doer Name
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
-          Task Description
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-yellow-50 min-w-[140px]">
-          Task Start Date & Time
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
-          Freq
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-green-50 min-w-[140px]">
-          Actual Date & Time
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50 min-w-[80px]">
-          Ok
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-purple-50 min-w-[150px]">
-          Not Ok
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50 min-w-[80px]">
-          Done
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-purple-50 min-w-[150px]">
-          N/A
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50 min-w-[80px]">
-          Remarks
-        </th>
-        <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-purple-50 min-w-[150px]">
-          Checked By
-        </th>
-      </tr>
-    </thead>
-    <tbody className="bg-white divide-y divide-gray-200">
-      {filteredHistoryData.length > 0 ? (
-        filteredHistoryData.map((history) => (
-          <tr key={history._id} className="hover:bg-gray-50">
-            {/* Task ID */}
-            <td className="px-3 py-4 min-w-[100px]">
-              <div className="text-sm font-medium text-gray-900 break-words">{history["col1"] || "—"}</div>
-            </td>
-            
-            {/* Doer Name */}
-            <td className="px-3 py-4 min-w-[100px]">
-              <div className="text-sm text-gray-900 break-words">{history["col4"] || "—"}</div>
-            </td>
-            
-            {/* Task Description */}
-            <td className="px-3 py-4 min-w-[200px]">
-              <div className="text-sm text-gray-900 break-words" title={history["col5"]}>
-                {history["col5"] || "—"}
-              </div>
-            </td>
-            
-            {/* Task Start Date & Time */}
-            <td className="px-3 py-4 bg-yellow-50 min-w-[140px]">
-              <div className="text-sm text-gray-900 break-words">
-                {history["col6"] ? (
-                  <div>
-                    <div className="font-medium break-words">
-                      {history["col6"].includes(" ") ? history["col6"].split(" ")[0] : history["col6"]}
-                    </div>
-                    {history["col6"].includes(" ") && (
-                      <div className="text-xs text-gray-500 break-words">
-                        {history["col6"].split(" ")[1]}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  "—"
-                )}
-              </div>
-            </td>
-            
-            {/* Frequency */}
-            <td className="px-3 py-4 min-w-[80px]">
-              <div className="text-sm text-gray-900 break-words">{history["col7"] || "—"}</div>
-            </td>
+            <div className="h-[calc(100vh-300px)] overflow-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 sticky top-0 z-10">
+                  <tr>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                      Task ID
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                      Doer Name
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
+                      Task Description
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-yellow-50 min-w-[140px]">
+                      Task Start Date & Time
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[80px]">
+                      Freq
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-green-50 min-w-[140px]">
+                      Actual Date & Time
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50 min-w-[80px]">
+                      Ok
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-purple-50 min-w-[150px]">
+                      Not Ok
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50 min-w-[80px]">
+                      Done
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-purple-50 min-w-[150px]">
+                      N/A
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50 min-w-[80px]">
+                      Remarks
+                    </th>
+                    <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-purple-50 min-w-[150px]">
+                      Checked By
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredHistoryData.length > 0 ? (
+                    filteredHistoryData.map((history) => (
+                      <tr key={history._id} className="hover:bg-gray-50">
+                        {/* Task ID */}
+                        <td className="px-3 py-4 min-w-[100px]">
+                          <div className="text-sm font-medium text-gray-900 break-words">{history["col1"] || "—"}</div>
+                        </td>
+                        
+                        {/* Doer Name */}
+                        <td className="px-3 py-4 min-w-[100px]">
+                          <div className="text-sm text-gray-900 break-words">{history["col4"] || "—"}</div>
+                        </td>
+                        
+                        {/* Task Description */}
+                        <td className="px-3 py-4 min-w-[200px]">
+                          <div className="text-sm text-gray-900 break-words" title={history["col5"]}>
+                            {history["col5"] || "—"}
+                          </div>
+                        </td>
+                        
+                        {/* Task Start Date & Time */}
+                        <td className="px-3 py-4 bg-yellow-50 min-w-[140px]">
+                          <div className="text-sm text-gray-900 break-words">
+                            {history["col6"] ? (
+                              <div>
+                                <div className="font-medium break-words">
+                                  {history["col6"].includes(" ") ? history["col6"].split(" ")[0] : history["col6"]}
+                                </div>
+                                {history["col6"].includes(" ") && (
+                                  <div className="text-xs text-gray-500 break-words">
+                                    {history["col6"].split(" ")[1]}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              "—"
+                            )}
+                          </div>
+                        </td>
+                        
+                        {/* Frequency */}
+                        <td className="px-3 py-4 min-w-[80px]">
+                          <div className="text-sm text-gray-900 break-words">{history["col7"] || "—"}</div>
+                        </td>
             
             {/* Actual Date & Time */}
             <td className="px-3 py-4 bg-green-50 min-w-[140px]">
