@@ -113,248 +113,250 @@ export default function Fuel() {
     })
   }
 
-  const FuelForm = () => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Add Fuel Record</h2>
-          <button
-            onClick={() => setShowFuelForm(false)}
-            className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
-          >
-            <X className="h-5 w-5" />
-          </button>
+// const FuelForm = ({ onClose, onSubmit, formData, onFormChange, onFileUpload }) => (
+  const FuelForm = ({ onClose, onSubmit, formData, onFormChange, onFileUpload }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      {/* Modal Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-800">Add Fuel Record</h2>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Modal Content */}
+      <form onSubmit={onSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+        {/* Rest of your form JSX remains exactly the same */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Vehicle Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Number *</label>
+            <input
+              type="text"
+              required
+              value={formData.vehicleNo}
+              onChange={(e) => onFormChange("vehicleNo", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="MH-12-AB-1234"
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Issue To */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Issue To *</label>
+            <input
+              type="text"
+              required
+              value={formData.issueTo}
+              onChange={(e) => onFormChange("issueTo", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Driver name"
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Last Reading */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Last Reading (KM) *</label>
+            <input
+              type="text"
+              required
+              value={formData.lastReading}
+              onChange={(e) => onFormChange("lastReading", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="15,250"
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Date of Filling */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date of Filling *</label>
+            <input
+              type="date"
+              required
+              value={formData.dateOfFilling}
+              onChange={(e) => onFormChange("dateOfFilling", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Fuel Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fuel Type *</label>
+            <select
+              required
+              value={formData.fuelType}
+              onChange={(e) => onFormChange("fuelType", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="petrol">Petrol</option>
+              <option value="diesel">Diesel</option>
+            </select>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+            <select
+              required
+              value={formData.status}
+              onChange={(e) => onFormChange("status", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          {/* Quantity in Liter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Quantity (Liters) *</label>
+            <input
+              type="number"
+              step="0.01"
+              required
+              value={formData.qtyInLiter}
+              onChange={(e) => onFormChange("qtyInLiter", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="45.00"
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Rate */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Rate per Liter *</label>
+            <input
+              type="number"
+              step="0.01"
+              required
+              value={formData.rate}
+              onChange={(e) => onFormChange("rate", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="102.50"
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Current KM Reading */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Current KM Reading *</label>
+            <input
+              type="text"
+              required
+              value={formData.currentKmReading}
+              onChange={(e) => onFormChange("currentKmReading", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="15,295"
+              autoComplete="off"
+            />
+          </div>
+
+          {/* Fuel Bill Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fuel Bill Number *</label>
+            <input
+              type="text"
+              required
+              value={formData.fuelBillNo}
+              onChange={(e) => onFormChange("fuelBillNo", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="FB001234"
+              autoComplete="off"
+            />
+          </div>
         </div>
 
-        {/* Modal Content */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Vehicle Number */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Number *</label>
+        {/* File Upload Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Vehicle Image */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Prev Km Image</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
               <input
-                type="text"
-                required
-                value={formData.vehicleNo}
-                onChange={(e) => handleFormChange("vehicleNo", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="MH-12-AB-1234"
-                autoComplete="off"
+                type="file"
+                accept="image/*"
+                onChange={(e) => onFileUpload("image", e.target.files[0])}
+                className="hidden"
+                id="vehicleImage"
               />
-            </div>
-
-            {/* Issue To */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Issue To *</label>
-              <input
-                type="text"
-                required
-                value={formData.issueTo}
-                onChange={(e) => handleFormChange("issueTo", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Driver name"
-                autoComplete="off"
-              />
-            </div>
-
-            {/* Last Reading */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Reading (KM) *</label>
-              <input
-                type="text"
-                required
-                value={formData.lastReading}
-                onChange={(e) => handleFormChange("lastReading", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="15,250"
-                autoComplete="off"
-              />
-            </div>
-
-            {/* Date of Filling */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date of Filling *</label>
-              <input
-                type="date"
-                required
-                value={formData.dateOfFilling}
-                onChange={(e) => handleFormChange("dateOfFilling", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Fuel Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fuel Type *</label>
-              <select
-                required
-                value={formData.fuelType}
-                onChange={(e) => handleFormChange("fuelType", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="petrol">Petrol</option>
-                <option value="diesel">Diesel</option>
-              </select>
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status *</label>
-              <select
-                required
-                value={formData.status}
-                onChange={(e) => handleFormChange("status", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-
-            {/* Quantity in Liter */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity (Liters) *</label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                value={formData.qtyInLiter}
-                onChange={(e) => handleFormChange("qtyInLiter", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="45.00"
-                autoComplete="off"
-              />
-            </div>
-
-            {/* Rate */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rate per Liter *</label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                value={formData.rate}
-                onChange={(e) => handleFormChange("rate", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="102.50"
-                autoComplete="off"
-              />
-            </div>
-
-            {/* Current KM Reading */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Current KM Reading *</label>
-              <input
-                type="text"
-                required
-                value={formData.currentKmReading}
-                onChange={(e) => handleFormChange("currentKmReading", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="15,295"
-                autoComplete="off"
-              />
-            </div>
-
-            {/* Fuel Bill Number */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fuel Bill Number *</label>
-              <input
-                type="text"
-                required
-                value={formData.fuelBillNo}
-                onChange={(e) => handleFormChange("fuelBillNo", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="FB001234"
-                autoComplete="off"
-              />
+              <label htmlFor="vehicleImage" className="cursor-pointer flex flex-col items-center justify-center">
+                <Upload className="h-6 w-6 text-gray-400 mb-1" />
+                <span className="text-xs text-gray-600 text-center">
+                  {formData.image ? formData.image.name : "Upload vehicle image"}
+                </span>
+              </label>
             </div>
           </div>
 
-          {/* File Upload Section */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Vehicle Image */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Prev Km Image</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload("image", e.target.files[0])}
-                  className="hidden"
-                  id="vehicleImage"
-                />
-                <label htmlFor="vehicleImage" className="cursor-pointer flex flex-col items-center justify-center">
-                  <Upload className="h-6 w-6 text-gray-400 mb-1" />
-                  <span className="text-xs text-gray-600 text-center">
-                    {formData.image ? formData.image.name : "Upload vehicle image"}
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* Bill Photo */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Bill Photo *</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload("billPhoto", e.target.files[0])}
-                  className="hidden"
-                  id="billPhoto"
-                  required
-                />
-                <label htmlFor="billPhoto" className="cursor-pointer flex flex-col items-center justify-center">
-                  <Upload className="h-6 w-6 text-gray-400 mb-1" />
-                  <span className="text-xs text-gray-600 text-center">
-                    {formData.billPhoto ? formData.billPhoto.name : "Upload bill photo"}
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* Current KM Image */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Current KM Image</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileUpload("currentKmImage", e.target.files[0])}
-                  className="hidden"
-                  id="currentKmImage"
-                />
-                <label htmlFor="currentKmImage" className="cursor-pointer flex flex-col items-center justify-center">
-                  <Upload className="h-6 w-6 text-gray-400 mb-1" />
-                  <span className="text-xs text-gray-600 text-center">
-                    {formData.currentKmImage ? formData.currentKmImage.name : "Upload KM reading"}
-                  </span>
-                </label>
-              </div>
+          {/* Bill Photo */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Bill Photo *</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => onFileUpload("billPhoto", e.target.files[0])}
+                className="hidden"
+                id="billPhoto"
+                required
+              />
+              <label htmlFor="billPhoto" className="cursor-pointer flex flex-col items-center justify-center">
+                <Upload className="h-6 w-6 text-gray-400 mb-1" />
+                <span className="text-xs text-gray-600 text-center">
+                  {formData.billPhoto ? formData.billPhoto.name : "Upload bill photo"}
+                </span>
+              </label>
             </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={() => setShowFuelForm(false)}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Add Fuel Record
-            </button>
+          {/* Current KM Image */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Current KM Image</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => onFileUpload("currentKmImage", e.target.files[0])}
+                className="hidden"
+                id="currentKmImage"
+              />
+              <label htmlFor="currentKmImage" className="cursor-pointer flex flex-col items-center justify-center">
+                <Upload className="h-6 w-6 text-gray-400 mb-1" />
+                <span className="text-xs text-gray-600 text-center">
+                  {formData.currentKmImage ? formData.currentKmImage.name : "Upload KM reading"}
+                </span>
+              </label>
+            </div>
           </div>
-        </form>
-      </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end gap-3 pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Add Fuel Record
+          </button>
+        </div>
+      </form>
     </div>
-  )
+  </div>
+)
 
   return (
     <AdminLayout>
@@ -483,7 +485,17 @@ export default function Fuel() {
         </div>
 
         {/* Fuel Form Modal */}
-        {showFuelForm && <FuelForm />}
+        {/* {showFuelForm && <FuelForm />} */}
+        {/* Fuel Form Modal */}
+{showFuelForm && (
+  <FuelForm
+    onClose={() => setShowFuelForm(false)}
+    onSubmit={handleSubmit}
+    formData={formData}
+    onFormChange={handleFormChange}
+    onFileUpload={handleFileUpload}
+  />
+)}
       </div>
     </AdminLayout>
   )

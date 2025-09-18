@@ -129,149 +129,149 @@ export default function AfterRepairReceiving() {
     setShowProcessModal(false)
   }
 
-  const ProcessModal = () => (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-800">Process Repair Bill</h2>
-          <button
-            onClick={() => setShowProcessModal(false)}
-            className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
-          >
-            <X className="h-5 w-5" />
-          </button>
+const ProcessModal = ({ onClose, onSubmit, formData, onFormChange, onFileUpload, selectedRepair }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+      {/* Modal Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-800">Process Repair Bill</h2>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Modal Content */}
+      <form onSubmit={onSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
+        {/* Vehicle Info */}
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <h3 className="font-medium text-blue-800">Vehicle: {selectedRepair?.vehicleNo}</h3>
+          <p className="text-blue-600 text-sm">{selectedRepair?.repairType}</p>
         </div>
 
-        {/* Modal Content */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[70vh]">
-          {/* Vehicle Info */}
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-medium text-blue-800">Vehicle: {selectedRepair?.vehicleNo}</h3>
-            <p className="text-blue-600 text-sm">{selectedRepair?.repairType}</p>
-          </div>
+        {/* Bill Number */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Bill Number *</label>
+          <input
+            type="text"
+            required
+            value={formData.billNo}
+            onChange={(e) => onFormChange("billNo", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter bill number"
+            autoComplete="off"
+          />
+        </div>
 
-          {/* Bill Number */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bill Number *</label>
+        {/* Bill Image */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Bill Image *</label>
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
             <input
-              type="text"
+              type="file"
+              accept="image/*"
+              onChange={onFileUpload}
+              className="hidden"
+              id="billImage"
               required
-              value={formData.billNo}
-              onChange={(e) => handleFormChange("billNo", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter bill number"
-              autoComplete="off"
             />
+            <label htmlFor="billImage" className="cursor-pointer flex flex-col items-center justify-center">
+              <Upload className="h-8 w-8 text-gray-400 mb-2" />
+              <span className="text-sm text-gray-600">
+                {formData.billImage ? formData.billImage.name : "Click to upload bill image"}
+              </span>
+            </label>
           </div>
+        </div>
 
-          {/* Bill Image */}
+        {/* Vendor Name */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Name *</label>
+          <input
+            type="text"
+            required
+            value={formData.vendorName}
+            onChange={(e) => onFormChange("vendorName", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter vendor name"
+            autoComplete="off"
+          />
+        </div>
+
+        {/* Amount Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bill Image *</label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="billImage"
-                required
-              />
-              <label htmlFor="billImage" className="cursor-pointer flex flex-col items-center justify-center">
-                <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                <span className="text-sm text-gray-600">
-                  {formData.billImage ? formData.billImage.name : "Click to upload bill image"}
-                </span>
-              </label>
-            </div>
-          </div>
-
-          {/* Vendor Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Name *</label>
-            <input
-              type="text"
-              required
-              value={formData.vendorName}
-              onChange={(e) => handleFormChange("vendorName", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter vendor name"
-              autoComplete="off"
-            />
-          </div>
-
-          {/* Amount Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount *</label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                value={formData.totalAmount}
-                onChange={(e) => handleFormChange("totalAmount", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="0.00"
-                autoComplete="off"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Advance Amount</label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.advanceAmount}
-                onChange={(e) => handleFormChange("advanceAmount", e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="0.00"
-                autoComplete="off"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Actual Given Amount *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount *</label>
             <input
               type="number"
               step="0.01"
               required
-              value={formData.actualGivenAmount}
-              onChange={(e) => handleFormChange("actualGivenAmount", e.target.value)}
+              value={formData.totalAmount}
+              onChange={(e) => onFormChange("totalAmount", e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="0.00"
               autoComplete="off"
             />
           </div>
-
-          {/* Pending Amount (Auto-calculated) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Pending Amount</label>
-            <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
-              ₹{formData.pendingAmount.toFixed(2)}
-            </div>
-            <p className="text-xs text-gray-500 mt-1">Formula: Total Amount - Advance Amount - Actual Given Amount</p>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Advance Amount</label>
+            <input
+              type="number"
+              step="0.01"
+              value={formData.advanceAmount}
+              onChange={(e) => onFormChange("advanceAmount", e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="0.00"
+              autoComplete="off"
+            />
           </div>
+        </div>
 
-          {/* Submit Button */}
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={() => setShowProcessModal(false)}
-              className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Process Bill
-            </button>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Actual Given Amount *</label>
+          <input
+            type="number"
+            step="0.01"
+            required
+            value={formData.actualGivenAmount}
+            onChange={(e) => onFormChange("actualGivenAmount", e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="0.00"
+            autoComplete="off"
+          />
+        </div>
+
+        {/* Pending Amount (Auto-calculated) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Pending Amount</label>
+          <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-gray-700">
+            ₹{formData.pendingAmount.toFixed(2)}
           </div>
-        </form>
-      </div>
+          <p className="text-xs text-gray-500 mt-1">Formula: Total Amount - Advance Amount - Actual Given Amount</p>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end gap-3 pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Process Bill
+          </button>
+        </div>
+      </form>
     </div>
-  )
+  </div>
+)
 
   return (
     <AdminLayout>
@@ -476,7 +476,18 @@ export default function AfterRepairReceiving() {
         )}
 
         {/* Process Modal */}
-        {showProcessModal && <ProcessModal />}
+        {/* {showProcessModal && <ProcessModal />} */}
+        {/* Process Modal */}
+{showProcessModal && (
+  <ProcessModal
+    onClose={() => setShowProcessModal(false)}
+    onSubmit={handleSubmit}
+    formData={formData}
+    onFormChange={handleFormChange}
+    onFileUpload={handleFileUpload}
+    selectedRepair={selectedRepair}
+  />
+)}
       </div>
     </AdminLayout>
   )
