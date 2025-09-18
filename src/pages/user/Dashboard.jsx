@@ -262,4 +262,3 @@ const TasksList = ({ filter }) => {
 }
 
 export default UserDashboard
-

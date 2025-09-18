@@ -2,7 +2,18 @@
 
 import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { CheckSquare, ClipboardList, Home, LogOut, Menu, Database, ChevronDown, ChevronRight, Zap, FileText, X, Play, Pause, KeyRound, Video } from 'lucide-react'
+import {
+  CheckSquare,
+  ClipboardList,
+  LogOut,
+  Menu,
+  Database,
+  ChevronDown,
+  ChevronRight,
+  AlertCircle,
+  CheckCircle,
+  Fuel,
+} from "lucide-react"
 
 export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
   const location = useLocation()
@@ -16,8 +27,8 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
 
   // Check authentication on component mount
   useEffect(() => {
-    const storedUsername = sessionStorage.getItem('username')
-    const storedRole = sessionStorage.getItem('role')
+    const storedUsername = sessionStorage.getItem("username")
+    const storedRole = sessionStorage.getItem("role")
 
     if (!storedUsername) {
       // Redirect to login if not authenticated
@@ -31,16 +42,16 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
 
   // Handle logout
   const handleLogout = () => {
-    sessionStorage.removeItem('username')
-    sessionStorage.removeItem('role')
-    sessionStorage.removeItem('department')
+    sessionStorage.removeItem("username")
+    sessionStorage.removeItem("role")
+    sessionStorage.removeItem("department")
     navigate("/login")
   }
 
   // Filter dataCategories based on user role
   const dataCategories = [
     //{ id: "main", name: "PURAB", link: "/dashboard/data/main" },
-    { id: "sales", name: "Checklist", link: "/dashboard/data/sales" },
+    { id: "sales", name: "Daily Maintenance", link: "/dashboard/data/sales" }, // Changed from "Checklist" to "Daily Maintenance"
     // { id: "service", name: "Service", link: "/dashboard/data/service" },
     //{ id: "account", name: "RKL", link: "/dashboard/data/account" },
     //{ id: "warehouse", name: "REFRASYNTH", link: "/dashboard/data/warehouse" },
@@ -59,7 +70,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       label: "Dashboard",
       icon: Database,
       active: location.pathname === "/dashboard/admin",
-      showFor: ["admin", "user"] // Show for both roles
+      showFor: ["admin", "user"], // Show for both roles
     },
     // {
     //   href: "/dashboard/quick-task",
@@ -73,16 +84,41 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       label: "Assign Task",
       icon: CheckSquare,
       active: location.pathname === "/dashboard/assign-task",
-      showFor: ["admin"] // Only show for admin
+      showFor: ["admin"], // Only show for admin
     },
 
     {
       href: "/dashboard/delegation",
-      label: "Checklist",
+      label: "Daily Maintenance", // Changed from "Checklist" to "Daily Maintenance"
       icon: ClipboardList,
       active: location.pathname === "/dashboard/delegation",
-      showFor: ["admin", "user"] // Only show for admin
+      showFor: ["admin", "user"], // Only show for admin
     },
+
+    {
+      href: "/dashboard/approval-pending",
+      label: "Approval Pending",
+      icon: AlertCircle,
+      active: location.pathname === "/dashboard/approval-pending",
+      showFor: ["admin", "user"],
+    },
+
+    {
+      href: "/dashboard/after-repair-receiving",
+      label: "After Repair Receiving",
+      icon: CheckCircle,
+      active: location.pathname === "/dashboard/after-repair-receiving",
+      showFor: ["admin", "user"],
+    },
+
+    {
+      href: "/dashboard/fuel",
+      label: "Fuel",
+      icon: Fuel,
+      active: location.pathname === "/dashboard/fuel",
+      showFor: ["admin", "user"],
+    },
+
     // {
     //   href: "#",
     //   label: "Data",
@@ -110,18 +146,14 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
   ]
 
   const getAccessibleDepartments = () => {
-    const userRole = sessionStorage.getItem('role') || 'user'
-    return dataCategories.filter(cat =>
-      !cat.showFor || cat.showFor.includes(userRole)
-    )
+    const userRole = sessionStorage.getItem("role") || "user"
+    return dataCategories.filter((cat) => !cat.showFor || cat.showFor.includes(userRole))
   }
 
   // Filter routes based on user role
   const getAccessibleRoutes = () => {
-    const userRole = sessionStorage.getItem('role') || 'user'
-    return routes.filter(route =>
-      route.showFor.includes(userRole)
-    )
+    const userRole = sessionStorage.getItem("role") || "user"
+    return routes.filter((route) => route.showFor.includes(userRole))
   }
 
   // Check if the current path is a data category page
@@ -142,12 +174,10 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
   const LicenseModal = () => {
     // Function to convert YouTube URL to embed URL
     const getYouTubeEmbedUrl = (url) => {
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-      const match = url.match(regExp);
-      return match && match[2].length === 11
-        ? `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0`
-        : url;
-    };
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+      const match = url.match(regExp)
+      return match && match[2].length === 11 ? `https://www.youtube.com/embed/${match[2]}?autoplay=1&rel=0` : url
+    }
 
     // const videoUrl = userRole === "admin"
     //   ? "https://youtu.be/v2yqJc1CKBA?si=J_r0PAIlGOqkHsz3"
@@ -327,10 +357,11 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                   <div>
                     <button
                       onClick={() => setIsDataSubmenuOpen(!isDataSubmenuOpen)}
-                      className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${route.active
-                        ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700"
-                        : "text-gray-700 hover:bg-blue-50"
-                        }`}
+                      className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                        route.active
+                          ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700"
+                          : "text-gray-700 hover:bg-blue-50"
+                      }`}
                     >
                       <div className="flex items-center gap-3">
                         <route.icon className={`h-4 w-4 ${route.active ? "text-blue-600" : ""}`} />
@@ -344,10 +375,11 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                           <li key={category.id}>
                             <Link
                               to={category.link || `/dashboard/data/${category.id}`}
-                              className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${location.pathname === (category.link || `/dashboard/data/${category.id}`)
-                                ? "bg-blue-50 text-blue-700 font-medium"
-                                : "text-gray-600 hover:bg-blue-50 hover:text-blue-700 "
-                                }`}
+                              className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${
+                                location.pathname === (category.link || `/dashboard/data/${category.id}`)
+                                  ? "bg-blue-50 text-blue-700 font-medium"
+                                  : "text-gray-600 hover:bg-blue-50 hover:text-blue-700 "
+                              }`}
                               onClick={() => setIsMobileMenuOpen(false)}
                             >
                               {category.name}
@@ -360,10 +392,11 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                 ) : (
                   <Link
                     to={route.href}
-                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${route.active
-                      ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700"
-                      : "text-gray-700 hover:bg-blue-50"
-                      }`}
+                    className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      route.active
+                        ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700"
+                        : "text-gray-700 hover:bg-blue-50"
+                    }`}
                   >
                     <route.icon className={`h-4 w-4 ${route.active ? "text-blue-600" : ""}`} />
                     {route.label}
@@ -377,7 +410,9 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">{username ? username.charAt(0).toUpperCase() : 'U'}</span>
+                <span className="text-sm font-medium text-white">
+                  {username ? username.charAt(0).toUpperCase() : "U"}
+                </span>
               </div>
               <div>
                 <p className="text-sm font-medium text-blue-700">
@@ -403,12 +438,34 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                   className="text-blue-700 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100"
                 >
                   {darkMode ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                      />
                     </svg>
                   ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                      />
                     </svg>
                   )}
                   <span className="sr-only">{darkMode ? "Light mode" : "Dark mode"}</span>
@@ -447,7 +504,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <ClipboardList className="h-5 w-5 text-blue-600" />
-                <span>Checklist & Delegation</span>
+                <span>Car Fms</span>
               </Link>
             </div>
             <nav className="flex-1 overflow-y-auto p-2 bg-white">
@@ -458,10 +515,11 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                       <div>
                         <button
                           onClick={() => setIsDataSubmenuOpen(!isDataSubmenuOpen)}
-                          className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${route.active
-                            ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700"
-                            : "text-gray-700 hover:bg-blue-50"
-                            }`}
+                          className={`flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                            route.active
+                              ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700"
+                              : "text-gray-700 hover:bg-blue-50"
+                          }`}
                         >
                           <div className="flex items-center gap-3">
                             <route.icon className={`h-4 w-4 ${route.active ? "text-blue-600" : ""}`} />
@@ -479,10 +537,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                               <li key={category.id}>
                                 <Link
                                   to={category.link || `/dashboard/data/${category.id}`}
-                                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${location.pathname === (category.link || `/dashboard/data/${category.id}`)
-                                    ? "bg-blue-50 text-blue-700 font-medium"
-                                    : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"
-                                    }`}
+                                  className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors ${location.pathname === (category.link || `/dashboard/data/${category.id}`) ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-600 hover:bg-blue-50 hover:text-blue-700"}`}
                                   onClick={() => setIsMobileMenuOpen(false)}
                                 >
                                   {category.name}
@@ -495,10 +550,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                     ) : (
                       <Link
                         to={route.href}
-                        className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${route.active
-                          ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700"
-                          : "text-gray-700 hover:bg-blue-50"
-                          }`}
+                        className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${route.active ? "bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700" : "text-gray-700 hover:bg-blue-50"}`}
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <route.icon className={`h-4 w-4 ${route.active ? "text-blue-600" : ""}`} />
@@ -513,7 +565,9 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">{username ? username.charAt(0).toUpperCase() : 'U'}</span>
+                    <span className="text-sm font-medium text-white">
+                      {username ? username.charAt(0).toUpperCase() : "U"}
+                    </span>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-blue-700">
@@ -540,12 +594,34 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
                       className="text-blue-700 hover:text-blue-900 p-1 rounded-full hover:bg-blue-100"
                     >
                       {darkMode ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                          />
                         </svg>
                       ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                          />
                         </svg>
                       )}
                       <span className="sr-only">{darkMode ? "Light mode" : "Dark mode"}</span>
@@ -572,7 +648,7 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex h-14 items-center justify-between border-b border-blue-200 bg-white px-4 md:px-6">
           <div className="flex md:hidden w-8"></div>
-          <h1 className="text-lg font-semibold text-blue-700">Checklist & Delegation</h1>
+          <h1 className="text-lg font-semibold text-blue-700">Vehicle Maintenance</h1>
           {/*<button
             onClick={() => setIsLicenseModalOpen(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2"
@@ -597,7 +673,6 @@ export default function AdminLayout({ children, darkMode, toggleDarkMode }) {
           </div>
         </main>
       </div>
-
     </div>
   )
 }

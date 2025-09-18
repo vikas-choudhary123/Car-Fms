@@ -1,6 +1,4 @@
 "use client"
-
-import { useState, useEffect } from "react"
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
 import LoginPage from "./pages/LoginPage"
 import AdminDashboard from "./pages/admin/Dashboard"
@@ -9,10 +7,14 @@ import AdminAssignTask from "./pages/admin/AssignTask"
 import DataPage from "./pages/admin/DataPage"
 import AdminDataPage from "./pages/admin/admin-data-page"
 import AccountDataPage from "./pages/delegation"
+import ApprovalPending from "./pages/admin/ApprovalPending"
+import AfterRepairReceiving from "./pages/admin/AfterRepairReceiving"
+import Fuel from "./pages/admin/Fuel"
 import "./index.css"
 import QuickTask from "./pages/QuickTask"
 import License from "./pages/License"
 import TrainingVideo from "./pages/TrainingVideo"
+
 // Auth wrapper component to protect routes
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const username = sessionStorage.getItem("username")
@@ -38,7 +40,7 @@ function App() {
   //   // Check for user preference
   //   if (
   //     localStorage.theme === "dark" ||
-  //     (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)
+  //     (!(\"theme\" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)
   //   ) {
   //     setDarkMode(true)
   //     document.documentElement.classList.add("dark")
@@ -104,6 +106,33 @@ function App() {
           element={
             <ProtectedRoute>
               <AccountDataPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/approval-pending"
+          element={
+            <ProtectedRoute>
+              <ApprovalPending />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/after-repair-receiving"
+          element={
+            <ProtectedRoute>
+              <AfterRepairReceiving />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/fuel"
+          element={
+            <ProtectedRoute>
+              <Fuel />
             </ProtectedRoute>
           }
         />
