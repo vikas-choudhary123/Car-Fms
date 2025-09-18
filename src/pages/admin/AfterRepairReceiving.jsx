@@ -329,6 +329,9 @@ export default function AfterRepairReceiving() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Vehicle No.
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -346,14 +349,19 @@ export default function AfterRepairReceiving() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredRepairs.map((repair) => (
                     <tr key={repair.id} className="hover:bg-gray-50">
+                       <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleProcessClick(repair)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition-colors"
+                        >
+                          Process
+                        </button>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {repair.vehicleNo}
                       </td>
@@ -363,16 +371,8 @@ export default function AfterRepairReceiving() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{repair.vendor}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
-                          Complete
+                          pending
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => handleProcessClick(repair)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm transition-colors"
-                        >
-                          Process
-                        </button>
                       </td>
                     </tr>
                   ))}

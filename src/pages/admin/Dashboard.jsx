@@ -1218,7 +1218,7 @@ export default function VehicleDashboard() {
                 {/* Fuel Efficiency */}
                 <div className="rounded-lg border border-gray-200 shadow-md bg-white">
                   <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-gray-100 p-4">
-                    <h3 className="text-blue-700 font-medium">Fuel Efficiency</h3>
+                    <h3 className="text-blue-700 font-medium">Vehicle Average</h3>
                     <p className="text-blue-600 text-sm">Vehicle-wise mileage performance</p>
                   </div>
                   <div className="p-4">

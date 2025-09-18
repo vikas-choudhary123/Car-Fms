@@ -275,7 +275,7 @@ export default function Fuel() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Vehicle Image */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Vehicle Image</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Prev Km Image</label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
                 <input
                   type="file"
@@ -422,38 +422,53 @@ export default function Fuel() {
                     KM Reading
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Average (km/L)
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {fuelRecords.map((record) => (
-                  <tr key={record.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {record.vehicleNo}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.issueTo}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{record.dateOfFilling}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">{record.fuelType}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.qtyInLiter}L</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{record.rate}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                      ₹{record.totalAmount}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.currentKmReading}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          record.status === "active"
-                            ? "bg-green-100 text-green-800 border border-green-200"
-                            : "bg-gray-100 text-gray-800 border border-gray-200"
-                        }`}
-                      >
-                        {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {fuelRecords.map((record) => {
+                  const kmTraveled =
+                    Number.parseInt(record.currentKmReading.replace(/,/g, "")) -
+                    Number.parseInt(record.lastReading.replace(/,/g, ""))
+                  const fuelEfficiency = (kmTraveled / Number.parseFloat(record.qtyInLiter)).toFixed(2)
+
+                  return (
+                    <tr key={record.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {record.vehicleNo}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.issueTo}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{record.dateOfFilling}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 capitalize">
+                        {record.fuelType}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.qtyInLiter}L</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{record.rate}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        ₹{record.totalAmount}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.currentKmReading}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium text-green-600">
+                        {fuelEfficiency} km/L
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            record.status === "active"
+                              ? "bg-green-100 text-green-800 border border-green-200"
+                              : "bg-gray-100 text-gray-800 border border-gray-200"
+                          }`}
+                        >
+                          {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

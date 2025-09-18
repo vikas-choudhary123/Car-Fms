@@ -11,6 +11,12 @@ export default function ApprovalPending() {
   const [filterStatus, setFilterStatus] = useState("all")
   const [activeTab, setActiveTab] = useState("pending")
   const [showIndentForm, setShowIndentForm] = useState(false)
+  const [showProcessForm, setShowProcessForm] = useState(false)
+  const [selectedRepair, setSelectedRepair] = useState(null)
+  const [processFormData, setProcessFormData] = useState({
+    approvedBy: "",
+    expectedRepairDate: "",
+  })
   const [indentFormData, setIndentFormData] = useState({
     vehicleNo: "",
     repairType: "",
@@ -23,7 +29,6 @@ export default function ApprovalPending() {
     },
   })
 
-  // Mock data for pending repairs
   useEffect(() => {
     const mockPendingData = [
       {
@@ -172,14 +177,42 @@ export default function ApprovalPending() {
     })
   }
 
+  const handleProcessFormChange = (field, value) => {
+    setProcessFormData((prevData) => ({
+      ...prevData,
+      [field]: value,
+    }))
+  }
+
+  const handleProcessClick = (repair) => {
+    setSelectedRepair(repair)
+    setShowProcessForm(true)
+  }
+
+  const handleProcessSubmit = (e) => {
+    e.preventDefault()
+    console.log("Process form submitted:", {
+      repair: selectedRepair,
+      processData: processFormData,
+    })
+    // Add logic to process the approval
+    setShowProcessForm(false)
+    setSelectedRepair(null)
+    // Reset form
+    setProcessFormData({
+      approvedBy: "",
+      expectedRepairDate: "",
+    })
+  }
+
   return (
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center space-x-3">
-            {/* <AlertCircle className="h-8 w-8 text-orange-600" /> */}
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Approval</h1>
+            <AlertCircle className="h-8 w-8 text-orange-600" />
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900">Approval Pending</h1>
           </div>
         </div>
 
@@ -215,7 +248,6 @@ export default function ApprovalPending() {
           </nav>
         </div>
 
-        {/* Search and Filter */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -262,17 +294,20 @@ export default function ApprovalPending() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Description
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Reported Date
-                    </th>
+                    </th> */}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Priority
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Est. Cost
-                    </th>
+                    </th> */}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Action
                     </th>
                   </tr>
                 </thead>
@@ -284,7 +319,7 @@ export default function ApprovalPending() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{repair.repairType}</td>
                       <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">{repair.description}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{repair.reportedDate}</td>
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{repair.reportedDate}</td> */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getPriorityColor(repair.priority)}`}
@@ -292,11 +327,19 @@ export default function ApprovalPending() {
                           {repair.priority.charAt(0).toUpperCase() + repair.priority.slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{repair.estimatedCost}</td>
+                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{repair.estimatedCost}</td> */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">
                           Pending
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleProcessClick(repair)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm font-medium hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        >
+                          Process
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -444,7 +487,7 @@ export default function ApprovalPending() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Reported Date *</label>
                       <input
                         type="date"
@@ -453,7 +496,7 @@ export default function ApprovalPending() {
                         onChange={(e) => handleIndentFormChange("reportedDate", e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
-                    </div>
+                    </div> */}
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Priority *</label>
@@ -469,7 +512,7 @@ export default function ApprovalPending() {
                       </select>
                     </div>
 
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Cost *</label>
                       <input
                         type="number"
@@ -480,12 +523,12 @@ export default function ApprovalPending() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Enter estimated cost"
                       />
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 
                 {/* Fuel Record Section */}
-                <div className="space-y-4 border-t border-gray-200 pt-6">
+                {/* <div className="space-y-4 border-t border-gray-200 pt-6">
                   <h3 className="text-lg font-medium text-gray-900">Fuel Record</h3>
 
                   <div>
@@ -503,7 +546,7 @@ export default function ApprovalPending() {
                       ))}
                     </select>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Form Actions */}
                 <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
@@ -519,6 +562,69 @@ export default function ApprovalPending() {
                     className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                   >
                     Create Indent
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {showProcessForm && selectedRepair && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">Process Approval</h2>
+                <button onClick={() => setShowProcessForm(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              <form onSubmit={handleProcessSubmit} className="p-6 space-y-4">
+                <div className="bg-gray-50 p-3 rounded-lg mb-4">
+                  <p className="text-sm text-gray-600">
+                    Vehicle: <span className="font-medium">{selectedRepair.vehicleNo}</span>
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Repair: <span className="font-medium">{selectedRepair.repairType}</span>
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Approved By *</label>
+                  <input
+                    type="text"
+                    required
+                    value={processFormData.approvedBy}
+                    onChange={(e) => handleProcessFormChange("approvedBy", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter approver name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Expected Repair Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={processFormData.expectedRepairDate}
+                    onChange={(e) => handleProcessFormChange("expectedRepairDate", e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setShowProcessForm(false)}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  >
+                    Approve
                   </button>
                 </div>
               </form>
